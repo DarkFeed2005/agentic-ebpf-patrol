@@ -1,18 +1,98 @@
-# Build and Release Folders
-bin-debug/
-bin-release/
-[Oo]bj/
-[Bb]in/
+# ==========================================
+# Cyber Patrol System - Root .gitignore
+# ==========================================
 
-# Other files and folders
+# ------------------------------------------
+# Environment Variables & Secrets (CRITICAL)
+# ------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+
+# ------------------------------------------
+# Local Audit, Overflow & Memory Logs
+# ------------------------------------------
+/var/lib/cyber-patrol/
+*.jsonl
+*.log
+
+# ------------------------------------------
+# Rust & eBPF Artifacts
+# ------------------------------------------
+/target/
+sensor/target/
+sensor/**/target/
+sensor/Cargo.lock.minimal
+*.o
+*.so
+*.dylib
+*.dll
+
+# ------------------------------------------
+# Golang Build Artifacts & Binaries
+# ------------------------------------------
+/bin/
+broker/bin/
+broker/broker
+broker/vendor/
+*.exe
+*.test
+*.prof
+*.out
+
+# ------------------------------------------
+# Python & FastAPI Artifacts
+# ------------------------------------------
+__pycache__/
+hunter/__pycache__/
+hunter/**/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Python Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+hunter/.venv/
+hunter/venv/
+
+# Python Tools & Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# ------------------------------------------
+# Docker & OS Generated Files
+# ------------------------------------------
+.docker/
+docker-compose.override.yml
+
+# Linux / System Files
+.DS_Store
+Thumbs.db
+*~
+*.swp
+*.swo
+
+# ------------------------------------------
+# IDE & Editor Specific Files
+# ------------------------------------------
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.iws
+*.iml
+*.ipr
+.project
+.classpath
 .settings/
-
-# Executables
-*.swf
-*.air
-*.ipa
-*.apk
-
-# Project files, i.e. `.project`, `.actionScriptProperties` and `.flexProperties`
-# should NOT be excluded as they contain compiler settings and other important
-# information for Eclipse / Flash Builder.
