@@ -1,0 +1,31 @@
+[package]
+name = "cyber-patrol-ebpf"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# NOTE on crate naming: this framework was historically published as
+# `aya-bpf` / `aya-bpf-macros`; those crates were renamed to `aya-ebpf` /
+# `aya-ebpf-macros` upstream. Functionality is equivalent -- if you're
+# following older tutorials that reference `aya_bpf::...`, swap the import
+# path to `aya_ebpf::...`. Pin exact versions from crates.io at build time;
+# this is a fast-moving crate.
+aya-ebpf = "0.1"
+aya-log-ebpf = "0.1"
+cyber-patrol-common = { path = "../cyber-patrol-common" }
+
+[[bin]]
+name = "cyber-patrol-ebpf"
+path = "src/main.rs"
+
+# eBPF bytecode must be small, have no unwind tables, and cannot use a
+# host-style panic strategy (there's no unwinding machinery in the kernel).
+[profile.release]
+lto = true
+panic = "abort"
+codegen-units = 1
+debug = false
+opt-level = 3
+
+[profile.dev]
+panic = "abort"
