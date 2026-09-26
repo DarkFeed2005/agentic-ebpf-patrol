@@ -1,0 +1,63 @@
+version: "3.9"
+
+# --- Topology note -----------------------------------------------------
+# The eBPF sensor is fundamentally host/kernel-coupled (BTF, tracepoints,
+# bpffs, CAP_BPF). It CAN run under Compose (shown below, and it's the
+# default here) but for local development it's often simpler -- and avoids
+# any base-image-vs-host-kernel friction -- to run it directly on the host
+# instead:
+#     sudo ./sensor/target/release/cyber-patrol-loader
+# and comment out the `sensor` service below. Either way, what matters is
+# that /sys/fs/bpf/cyber_patrol/EVENTS exists and is populated before
+# `broker` starts reading it (the broker retries on startup, so ordering
+# is forgiving either way).
+
+services:
+  sensor:
+    build:
+      context: ./sensor
+    privileged: true    # CAP_BPF/CAP_SYS_ADMIN equivalent for loading + attaching
+    pid: host            # observe real host PIDs, not the container's own namespace
+    network_mode: host
+    volumes:
+      - /sys/fs/bpf:/sys/fs/bpf
+      - /sys/kernel/debug:/sys/kernel/debug:ro
+      - /sys/kernel/tracing:/sys/kernel/tracing:ro
+      - /sys/kernel/btf:/sys/kernel/btf:ro
+    restart: unless-stopped
+
+  broker:
+    build:
+      context: ./broker
+    depends_on:
+      - hunter
+    volumes:
+      - /sys/fs/bpf/cyber_patrol:/sys/fs/bpf/cyber_patrol:ro
+      - broker-data:/var/lib/cyber-patrol
+    command:
+      - "-map-path=/sys/fs/bpf/cyber_patrol/EVENTS"
+      - "-hunter-url=http://hunter:8000"
+      - "-overflow-path=/var/lib/cyber-patrol/overflow.jsonl"
+      - "-audit-path=/var/lib/cyber-patrol/audit.jsonl"
+    ports:
+      - "9090:9090"   # /healthz, /metrics
+    restart: unless-stopped
+
+  hunter:
+    build:
+      context: ./hunter
+    environment:
+      CYBER_PATROL_ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:?set ANTHROPIC_API_KEY in your .env}
+      CYBER_PATROL_MODEL: ${CYBER_PATROL_MODEL:-claude-sonnet-5}
+      CYBER_PATROL_KILL_CONFIDENCE_FLOOR: ${KILL_CONFIDENCE_FLOOR:-0.85}
+    volumes:
+      # Bind-mounted, not baked into the image -- see hunter/Dockerfile.
+      # Only relevant if you use the Python-side privileged kill fallback;
+      # safe to omit if you rely solely on the Go broker's responder.
+      - ./scripts:/opt/cyber-patrol/scripts:ro
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+volumes:
+  broker-data:
