@@ -1,0 +1,16 @@
+[package]
+name = "cyber-patrol-common"
+version = "0.1.0"
+edition = "2021"
+
+# No dependencies on purpose: this crate is compiled twice -- once for the
+# `bpfel-unknown-none` eBPF target (no_std, no allocator) and once as a
+# normal std crate for the loader. Keeping it dependency-free avoids
+# dragging anything std-only into the eBPF build.
+[dependencies]
+
+[features]
+default = []
+# Enabled by cyber-patrol-loader's Cargo.toml so this crate compiles with
+# `std` available there; cyber-patrol-ebpf leaves this off and gets `no_std`.
+user = []
