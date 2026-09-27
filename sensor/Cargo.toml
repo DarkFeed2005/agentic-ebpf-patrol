@@ -1,0 +1,17 @@
+[workspace]
+resolver = "2"
+members = [
+    "cyber-patrol-common",
+    "cyber-patrol-ebpf",
+    "cyber-patrol-loader",
+    "xtask",
+]
+
+# cyber-patrol-ebpf is a `no_std`/`no_main` freestanding binary compiled for
+# a completely different target (bpfel-unknown-none) than the rest of the
+# workspace. aya-build's build.rs (invoked from cyber-patrol-loader)
+# compiles it out-of-band via `cargo build -p cyber-patrol-ebpf --target
+# bpfel-unknown-none -Z build-std=core`, so it is intentionally excluded
+# from the default `cargo build`/`cargo check` target set here to avoid the
+# host toolchain tripping over a target it can't natively build for.
+default-members = ["cyber-patrol-common", "cyber-patrol-loader", "xtask"]
