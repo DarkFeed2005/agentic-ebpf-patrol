@@ -30,5 +30,19 @@ fn main() {
         .find(|p| p.name == "cyber-patrol-ebpf")
         .expect("cyber-patrol-ebpf package not found in workspace metadata");
 
-    aya_build::build_ebpf([ebpf_package]).expect("failed to build cyber-patrol-ebpf");
+    let ebpf_root = ebpf_package
+        .manifest_path
+        .parent()
+        .expect("cyber-patrol-ebpf manifest has a parent dir")
+        .to_string();
+
+    let ebpf = aya_build::Package {
+        name: &ebpf_package.name,
+        root_dir: &ebpf_root,
+        no_default_features: false,
+        features: &[],
+    };
+
+    aya_build::build_ebpf([ebpf], aya_build::Toolchain::default())
+        .expect("failed to build cyber-patrol-ebpf");
 }
