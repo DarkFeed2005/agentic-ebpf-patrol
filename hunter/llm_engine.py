@@ -105,7 +105,10 @@ class ThreatHuntingEngine:
 
     def __init__(self, settings: Settings):
         self._settings = settings
-        self._client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
+        self._client = anthropic.Anthropic(
+            api_key=settings.anthropic_api_key,
+            base_url=settings.anthropic_base_url,
+        )
         self._system_prompt = _build_system_prompt()
 
     def evaluate(self, event: ExecEvent) -> Verdict:
@@ -125,7 +128,7 @@ class ThreatHuntingEngine:
     def _call_model(self, event: ExecEvent) -> anthropic.types.Message:
         return self._client.messages.create(
             model=self._settings.model,
-            max_tokens=1024,
+            max_tokens=self._settings.max_tokens,
             system=self._system_prompt,
             tools=[_VERDICT_TOOL],
             tool_choice={"type": "tool", "name": "emit_threat_verdict"},
