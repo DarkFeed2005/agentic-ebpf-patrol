@@ -3,7 +3,18 @@
 # rationale behind running the sensor outside Docker for local dev.
 
 .PHONY: sensor-preflight sensor-build sensor-run broker-build broker-run \
-        hunter-install hunter-run compose-up compose-down
+        hunter-install hunter-run compose-up compose-down up down dash
+
+# One-shot bring-up of the whole stack. Requires root.
+up:
+	sudo bash scripts/run_all.sh
+
+down:
+	sudo bash scripts/stop_all.sh
+
+# Live rich dashboard: metrics from :9090 + streaming verdicts.
+dash:
+	./hunter/.venv/bin/python scripts/dashboard.py
 
 sensor-preflight:
 	./scripts/verify_caps.sh
